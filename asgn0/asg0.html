@@ -29,11 +29,28 @@
         <label for="yCoord2">y</label>
         <input type="number" id="yCoord2" name="yCoord2"></input>
     </div>
-    <div id="draw">
+    <div style="margin-bottom: 10px" id="draw">
         <button type="button"
             id="drawButton" 
             name="drawButton" 
             onclick="handleDrawEvent()">Draw</button>
+    </div>
+    <div id="operationSection">
+        Operation:
+        <select id="operationSelect">
+            <option value="mul">Multiply</option>
+            <option value="div">Divide</option>
+            <option value="add">Add</option>
+            <option value="sub">Subtract</option>
+        </select>
+        <label for="scalarVal">Scalar:</label>
+        <input type="number" id="scalarVal"></input>
+    </div>
+    <div style="margin-bottom: 10px" id="operationDraw">
+        <button type="button"
+            id="operationDrawButton" 
+            name="operationDrawButton" 
+            onclick="handleDrawOperationEvent()">Draw</button>
     </div>
  </body>
 </html> 
