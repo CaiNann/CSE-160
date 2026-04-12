@@ -1,4 +1,4 @@
-class Triangle {
+export class Triangle {
   constructor() {
     this.type = "triangle";
     this.position = [0.0, 0.0, 0.0];
@@ -17,11 +17,16 @@ class Triangle {
     gl.uniform1f(u_PointSize, size);
     // Draw
     var d = this.size / 200.0; //delta
-    drawTriangle([xy[0], xy[1], xy[0]+d, xy[1], xy[0], xy[1]+d]);
+    var h = d * (Math.sqrt(3) / 2);
+    drawTriangle([
+      xy[0] - d / 2, xy[1] - h / 3,
+      xy[0] + d / 2, xy[1] - h / 3,
+      xy[0], xy[1] + 2 * h / 3
+    ]);
   }
 }
 
-function drawTriangle(vertices) {
+export function drawTriangle(vertices) {
   var n = 3;
   
   // Create buffer object

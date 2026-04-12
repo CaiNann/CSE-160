@@ -1,3 +1,7 @@
+import { drawCustomImage } from './CustomDrawing.js';
+import { Triangle } from './Triangle.js';
+import { Circle } from './Circle.js';
+
 // ColoredPoint.js (c) 2012 matsuda
 // Vertex shader program
 var VSHADER_SOURCE =
@@ -16,14 +20,20 @@ var FSHADER_SOURCE =
   "  gl_FragColor = u_FragColor;\n" +
   "}\n";
 
-let canvas;
-let gl;
-let a_Position;
-let u_FragColor;
-let u_PointSize;
-let g_selectedColor = getRGBColor();
-let g_selectedSize = 5.0;
-let g_selectedShape = "point";
+window.g_shapesList = [];
+window.g_selectedColor = [1.0, 1.0, 1.0, 1.0];
+window.g_selectedSize = 5.0;
+window.g_selectedShape = "point";
+window.g_selectedSegments = 10;
+window.canvas = null;  // add this
+window.gl = null;      // add this
+window.a_Position = null;
+window.u_FragColor = null;
+window.u_PointSize = null;
+window.customImageButton = false;
+window.gameState = "WAITING";
+window.gameStartTime = null;
+window.gameTimeoutID = null;
 
 function getRGBColor() {
   return [
@@ -100,6 +110,12 @@ function addActionsForHtmlUI() {
   document.getElementById("circle").onclick = function () {
     g_selectedShape = "circle";
   };
+  document.getElementById("custom").onclick = function () {
+    customImageButton = true;
+    document.getElementById("gameButton").hidden = false;
+    document.getElementById("imageGroup").hidden = false;
+    drawCustomImage();
+  };
   
   // Add event listeners for color selection
   document.getElementById("redSlider").oninput = function () {
@@ -115,6 +131,19 @@ function addActionsForHtmlUI() {
   // Add event listener for shape size selection
   document.getElementById("sizeSlider").oninput = function () {
     g_selectedSize = parseFloat(this.value);
+  };
+  
+  // Add event listener for segment count selection
+  document.getElementById("segmentSlider").oninput = function () {
+    g_selectedSegments = parseInt(this.value);
+  };
+  
+  // Add event listener for game button
+  document.getElementById("gameButton").onclick = function () {
+    gameState = "PLAYING";
+    document.getElementById("bottomText").innerText = "Wait for the green background...";
+    document.getElementById("bottomText").hidden = false;
+    playGame();
   };
 }
 
@@ -141,10 +170,16 @@ function main() {
   gl.clear(gl.COLOR_BUFFER_BIT);
 }
 
-var g_shapesList = [];
-
 function click(ev) {
-  [x, y] = convertCoordinatesEventToGL(ev);
+  if (gameState === "PLAYING") {
+    triggerGameOver();
+    return;
+  } else if (gameState === "GREEN") {
+    triggerVictory();
+    return;
+  }
+  
+  let [x, y] = convertCoordinatesEventToGL(ev);
   
   if (g_selectedShape === "point") {
     var shape = new Point();
@@ -157,6 +192,13 @@ function click(ev) {
     shape.position = [x, y, 0.0];
     shape.color = g_selectedColor;
     shape.size = g_selectedSize;
+    g_shapesList.push(shape);
+  } else if (g_selectedShape === "circle") {
+    var shape = new Circle();
+    shape.position = [x, y, 0.0];
+    shape.color = g_selectedColor;
+    shape.size = g_selectedSize;
+    shape.segments = g_selectedSegments;
     g_shapesList.push(shape);
   }
 
@@ -174,7 +216,7 @@ function convertCoordinatesEventToGL(ev) {
   return [x, y];
 }
 
-function renderAllShapes() {
+export function renderAllShapes() {
   // Clear <canvas>
   gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -182,4 +224,51 @@ function renderAllShapes() {
   for (var i = 0; i < len; i++) {
     g_shapesList[i].render();
   }
+  if (customImageButton) {
+    drawCustomImage();
+  }
 }
+
+function playGame() {
+  gl.clearColor(1.0, 0.0, 0.0, 1.0); 
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  drawCustomImage();
+
+  let randomDelay = Math.random() * 3000 + 2000;
+  
+  gameTimeoutID = setTimeout(() => {
+    gameState = "GREEN";
+    gameStartTime = performance.now();
+    
+    gl.clearColor(0.0, 1.0, 0.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+  }, randomDelay);
+}
+
+function triggerGameOver() {
+  clearTimeout(gameTimeoutID);
+  gameState = "WAITING";
+  gameStartTime = null;
+  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  drawCustomImage();
+  document.getElementById("bottomText").innerText = "Too early, Try again!";
+}
+
+function triggerVictory() {
+  clearTimeout(gameTimeoutID);
+  var timeTaken = performance.now() - gameStartTime;
+  gameState = "WAITING";
+  gameStartTime = null;
+  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  drawCustomImage();
+  console.log(timeTaken);
+  if (timeTaken < 225) {
+    document.getElementById("bottomText").innerText = "You win!";
+  } else {
+    document.getElementById("bottomText").innerText = "Too late, Try again!";
+  }
+}
+
+window.onload = main;

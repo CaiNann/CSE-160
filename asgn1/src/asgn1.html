@@ -5,10 +5,32 @@
     <title>Paint!</title>
 </head>
  
-<body onload="main()">
-    <canvas id="webgl" width="400" height="400">
-        Please use the browser supporting "canvas".
-    </canvas>
+<body>
+    <div id="canvas-container" style="position: relative; display: inline-block;">
+        <canvas id="webgl" width="400" height="400" style="border: 1px solid black;"></canvas>
+        
+        <div id="bottomText" hidden style="
+            position: absolute; 
+            bottom: 10px;           
+            width: 100%;            
+            text-align: center;     
+            color: white;           
+            font-family: Arial; 
+            font-weight: bold;
+            pointer-events: none;   
+        ">
+            Wait for the green background...
+        </div>
+    </div>
+    
+    <div id="imageGroup" hidden>
+        <img id="sketch" src="../lib/sketch.jpg" style="width: 400px; height: 400px; display: block;">
+        <p id="imageCaption" style="width: 400px; text-align: center; margin-top: 10px;">
+            I also added a reaction test game (a duel at high noon). You can see your results in the console upon completion.
+            You must beat 225 to win!
+        </p>
+    </div>
+    
     
     <div>
         <button type="button" id="green">Green</button>
@@ -23,6 +45,10 @@
     </div>
     
     <div>
+        <button type="button" id="custom">Draw Custom Image</button>
+    </div>
+    
+    <div>
         Red <input type="range" min="0" max="100" value="100" class="slider" id="redSlider">
     </div>
     <div>
@@ -34,13 +60,26 @@
     <div>
         Size <input type="range" min="5" max="40" value="5" class="slider" id="sizeSlider"
     </div>
+    <div>
+        (Circles) Segment Count <input type="range" min="10" max="20" value="10" class="slider" id="segmentSlider"
+    </div>
+    
+    <div>
+        <button type="button" id="gameButton" hidden>High Noon...</button>
+    </div>
+    <div>
+        <id=hidden></idhidden>
+    </div>
     
  
     <script src="../lib/webgl-utils.js"></script>
     <script src="../lib/webgl-debug.js"></script>
     <script src="../lib/cuon-utils.js"></script>
-    <script src="asgn1.js"></script>
     <script src="Point.js"></script>
-    <script src="Triangle.js"></script>
+    <script type="module" src="asgn1.js"></script>
+    
+    
+    
+   
 </body>
 </html>
