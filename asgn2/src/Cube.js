@@ -17,5 +17,32 @@ export class Cube {
       
     drawTriangle3D([0.0,0.0,0.0, 1.0,1.0,0.0, 1.0,0.0,0.0]);
     drawTriangle3D([0.0,0.0,0.0, 0.0,1.0,0.0, 1.0,1.0,0.0]);
+    
+    gl.uniform4f(u_FragColor, rgba[0] * .9, rgba[1] * .9, rgba[2] * .9, rgba[3]);
+    
+    // Front face
+    drawTriangle3D([0,0,0,  1,0,0,  1,1,0]);
+    drawTriangle3D([0,0,0,  1,1,0,  0,1,0]);
+
+    // Back face
+    drawTriangle3D([0,0,1,  1,1,1,  1,0,1]);
+    drawTriangle3D([0,0,1,  0,1,1,  1,1,1]);
+
+    // Left face
+    drawTriangle3D([0,0,0,  0,1,0,  0,1,1]);
+    drawTriangle3D([0,0,0,  0,1,1,  0,0,1]);
+
+    // Right face
+    drawTriangle3D([1,0,0,  1,0,1,  1,1,1]);
+    drawTriangle3D([1,0,0,  1,1,1,  1,1,0]);
+
+    // Top face
+    drawTriangle3D([0,1,0,  1,1,0,  1,1,1]);
+    drawTriangle3D([0,1,0,  1,1,1,  0,1,1]);
+
+    // Bottom face
+    drawTriangle3D([0,0,0,  1,0,1,  1,0,0]);
+    drawTriangle3D([0,0,0,  0,0,1,  1,0,1]);
+    
   }
 }

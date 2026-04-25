@@ -8,8 +8,9 @@ import { Cube } from './Cube.js';
 var VSHADER_SOURCE =
   "attribute vec4 a_Position;\n" +
   "uniform mat4 u_ModelMatrix;\n" +
+  "uniform mat4 u_GlobalRotateMatrix;\n" +
   "void main() {\n" +
-  "  gl_Position = u_ModelMatrix * a_Position;\n" +
+  "  gl_Position = u_GlobalRotateMatrix * u_ModelMatrix * a_Position;\n" +
   "}\n";
 
 // Fragment shader program
@@ -22,7 +23,7 @@ var FSHADER_SOURCE =
 
 window.g_shapesList = [];
 window.g_selectedColor = [1.0, 1.0, 1.0, 1.0];
-window.g_selectedSize = 5.0;
+window.g_selectedAngle = 0;
 window.g_selectedShape = "point";
 window.g_selectedSegments = 10;
 window.canvas = null;  // add this
@@ -30,6 +31,7 @@ window.gl = null;      // add this
 window.a_Position = null;
 window.u_FragColor = null;
 window.u_ModelMatrix = null;
+window.u_GlobalRotateMatrix = null;
 window.customImageButton = false;
 window.gameState = "WAITING";
 window.gameStartTime = null;
@@ -54,6 +56,8 @@ function setupWebGL() {
     console.log("Failed to get the rendering context for WebGL");
     return;
   }
+  
+  gl.enable(gl.DEPTH_TEST);
 }
 
 function connectVariablesToGLSL() {
@@ -83,6 +87,13 @@ function connectVariablesToGLSL() {
     console.log("Failed to get the storage location of u_ModelMatrix");
     return;
   }
+  
+  // Get the storage location of u_GlobalRotateMatrix
+  u_GlobalRotateMatrix = gl.getUniformLocation(gl.program, "u_GlobalRotateMatrix");
+  if (!u_GlobalRotateMatrix) {
+    console.log("Failed to get the storage location of u_GlobalRotateMatrix");
+    return;
+  }  
   
   var identityM = new Matrix4();
   gl.uniformMatrix4fv(u_ModelMatrix, false, identityM.elements);
@@ -132,9 +143,10 @@ function addActionsForHtmlUI() {
     g_selectedColor = getRGBColor();
   };
   
-  // Add event listener for shape size selection
-  document.getElementById("sizeSlider").oninput = function () {
-    g_selectedSize = parseFloat(this.value);
+  // Add event listener for camera angle selection
+  document.getElementById("angleSlider").oninput = function () {
+    g_selectedAngle = parseFloat(this.value);
+    renderAllShapes();
   };
   
   // Add event listener for segment count selection
@@ -159,51 +171,8 @@ function main() {
 
   addActionsForHtmlUI();
   
-  // Register function (event handler) to be called on a mouse press
-  canvas.onmousedown = click;
-  canvas.onmousemove = function(ev) {
-    if (ev.buttons === 1) {
-      click(ev); 
-    }
-  };
-
   // Specify the color for clearing <canvas>
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
-
-  renderAllShapes();
-}
-
-function click(ev) {
-  if (gameState === "PLAYING") {
-    triggerGameOver();
-    return;
-  } else if (gameState === "GREEN") {
-    triggerVictory();
-    return;
-  }
-  
-  let [x, y] = convertCoordinatesEventToGL(ev);
-  
-  if (g_selectedShape === "point") {
-    var shape = new Point();
-    shape.position = [x, y, 0.0];
-    shape.color = g_selectedColor;
-    shape.size = g_selectedSize;
-    g_shapesList.push(shape);
-  } else if (g_selectedShape === "triangle") {
-    var shape = new Triangle();
-    shape.position = [x, y, 0.0];
-    shape.color = g_selectedColor;
-    shape.size = g_selectedSize;
-    g_shapesList.push(shape);
-  } else if (g_selectedShape === "circle") {
-    var shape = new Circle();
-    shape.position = [x, y, 0.0];
-    shape.color = g_selectedColor;
-    shape.size = g_selectedSize;
-    shape.segments = g_selectedSegments;
-    g_shapesList.push(shape);
-  }
+  gl.clearColor(0.0, 1.0, 0.0, 1.0);
 
   renderAllShapes();
 }
@@ -220,18 +189,119 @@ function convertCoordinatesEventToGL(ev) {
 }
 
 export function renderAllShapes() {
+  // Apply camera rotation
+  var cameraMatrix = new Matrix4();
+  cameraMatrix.rotate(g_selectedAngle, 0, 1, 0);
+  gl.uniformMatrix4fv(u_GlobalRotateMatrix, false, cameraMatrix.elements);
+  
   // Clear <canvas>
-  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  // Sanity check
-  drawTriangle3D([-1.0,0.0,0.0, -0.5,-1.0,0.0, 0.0,0.0,0.0]);
-  
+  var grayColor = [0.59, 0.57, 0.54, 1.0];
+  var whiteColor = [0.92, 0.88, 0.85, 1.0];
+  var blackColor = [0.17, 0.13, 0.11, 1.0];
+
   var body = new Cube();
-  body.color = [1.0, 0.0, 0.0, 1.0];
-  body.matrix.translate(-0.25, -0.5, 0.0);
-  body.matrix.scale(0.5, 1.0, 0.5)
+  body.color = grayColor;
+  body.matrix.translate(-0.2, -0.3, 0.0);
+  body.matrix.scale(0.5, 0.5, 0.3);
   body.render();
-  
+  var belly = new Cube();
+  belly.color = whiteColor;
+  belly.matrix = new Matrix4(body.matrix);
+  belly.matrix.translate(0.1, 0, -0.001);
+  belly.matrix.scale(0.8, 1, 0.8);
+  belly.render();
+
+  var head = new Cube();
+  head.color = grayColor;
+  head.matrix = new Matrix4(body.matrix);
+  head.matrix.translate(0.15, 1, 0.05);
+  head.matrix.scale(0.7, 0.5, 0.8);
+  head.render();
+
+  var nose = new Cube();
+  nose.color = blackColor;
+  nose.matrix = new Matrix4(head.matrix);
+  nose.matrix.translate(0.4, 0.1, -0.1);
+  nose.matrix.scale(0.2, 0.5, 0.9)
+  nose.render();
+  var bottomNose = new Cube();
+  bottomNose.color = whiteColor;
+  bottomNose.matrix = new Matrix4(nose.matrix);
+  bottomNose.matrix.translate(0.0, -0.15, 0.0);
+  bottomNose.matrix.scale(1, 0.5, 1);
+  bottomNose.render();
+
+  var rightEye = new Cube();
+  rightEye.color = blackColor;
+  rightEye.matrix = new Matrix4(head.matrix);
+  rightEye.matrix.translate(0.7, 0.5, -0.001);
+  rightEye.matrix.scale(0.1, 0.15, 0.001);
+  rightEye.render();
+
+  var leftEye = new Cube();
+  leftEye.color = blackColor;
+  leftEye.matrix = new Matrix4(head.matrix);
+  leftEye.matrix.translate(0.2, 0.5, -0.001);
+  leftEye.matrix.scale(0.1, 0.15, 0.001);
+  leftEye.render();
+
+  var rightEar = new Cube();
+  rightEar.color = grayColor;
+  rightEar.matrix = new Matrix4(head.matrix);
+  rightEar.matrix.translate(0.6, 0.7, 0.2);
+  rightEar.matrix.rotate(-10, 0, 0, 1);
+  rightEar.matrix.scale(0.6, 0.7, 0.5);
+  rightEar.render();
+  var innerRightEar = new Cube();
+  innerRightEar.color = whiteColor;
+  innerRightEar.matrix = new Matrix4(rightEar.matrix);
+  innerRightEar.matrix.translate(0.1, 0.1, -0.1);
+  innerRightEar.matrix.scale(0.7, 0.7, 0.9);
+  innerRightEar.render();
+
+  var leftEar = new Cube();
+  leftEar.color = grayColor;
+  leftEar.matrix = new Matrix4(head.matrix);
+  leftEar.matrix.translate(-0.2, 0.6, 0.2);
+  leftEar.matrix.rotate(10, 0, 0, 1);
+  leftEar.matrix.scale(0.6, 0.7, 0.5);
+  leftEar.render();
+  var innerLeftEar = new Cube();
+  innerLeftEar.color = whiteColor;
+  innerLeftEar.matrix = new Matrix4(leftEar.matrix);
+  innerLeftEar.matrix.translate(0.2, 0.1, -0.1);
+  innerLeftEar.matrix.scale(0.7, 0.7, 0.9);
+  innerLeftEar.render();
+
+  var rightShoulder = new Cube();
+  rightShoulder.color = grayColor;
+  rightShoulder.matrix = new Matrix4(body.matrix);
+  rightShoulder.matrix.translate(0.9, 0.55, 0.1);
+  rightShoulder.matrix.scale(0.3, 0.4, 0.7);
+  rightShoulder.render();
+  var rightArm = new Cube();
+  rightArm.color = grayColor;
+  rightArm.matrix = new Matrix4(rightShoulder.matrix);
+  rightArm.matrix.translate(1, 0.1, 0.2);
+  rightArm.matrix.rotate(45, 0, 1, 0);
+  rightArm.matrix.scale(1, 0.8, 0.6);
+  rightArm.render();
+  var rightHand = new Cube();
+  rightHand.color = grayColor;
+  rightHand.matrix = new Matrix4(rightArm.matrix);
+  rightHand.matrix.translate(1, 0.1, 0.2);
+  rightHand.matrix.scale(0.5, 0.7, 0.5);
+  rightHand.render();
+  var rightHandFinger1 = new Cube();
+  rightHandFinger1.color = blackColor;
+  rightHandFinger1.matrix = new Matrix4(rightHand.matrix);
+  rightHandFinger1.matrix.translate(1, 0.6, 0.1);
+  rightHandFinger1.matrix.scale(0.8, 0.2, 0.5);
+  rightHandFinger1.render();
+ 
+  /*
   var leftArm = new Cube();
   leftArm.color = [1, 1, 0, 1];
   leftArm.matrix.translate(0.7, 0.0, 0.0);
@@ -239,6 +309,13 @@ export function renderAllShapes() {
   leftArm.matrix.scale(0.25, 0.7, 0.5);
   leftArm.render();
   
+  var box = new Cube();
+  box.color = [1, 0, 1, 1];
+  box.matrix.translate(0,0,-0.50,0);
+  box.matrix.rotate(-30,1,0,0)
+  box.matrix.scale(0.5, 0.5, 0.5);
+  box.render();
+  */
 }
 
 function playGame() {
