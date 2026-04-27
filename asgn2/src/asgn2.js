@@ -24,8 +24,14 @@ var FSHADER_SOURCE =
   "}\n";
 
 window.g_selectedXAngle = 0;
-window.g_selectedYAngle = 0;
+window.g_selectedYAngle = -90;
 window.g_selectedZAngle = 0;
+window.g_leftArmAngle = 0;
+window.g_leftHandAngle = 0;
+window.g_leftShoulderAngle = 0;
+window.g_rightArmAngle = 0;
+window.g_rightHandAngle = 0;
+window.g_rightShoulderAngle = 0;
 window.canvas = null;
 window.gl = null;
 window.a_Position = null;
@@ -122,6 +128,36 @@ function addActionsForHtmlUI() {
     g_selectedZAngle = parseFloat(this.value);
     renderAllShapes();
   };
+
+  // Add event listener for leftArmAngle selection
+  document.getElementById("leftArmAngle").oninput = function () {
+    g_leftArmAngle = parseFloat(this.value);
+    renderAllShapes();
+  }
+
+  // Add event listener for leftHandAngle selection
+  document.getElementById("leftHandAngle").oninput = function () {
+    g_leftHandAngle = parseFloat(this.value);
+    renderAllShapes();
+  }
+
+  // Add event listener for leftShoulderAngle selection
+  document.getElementById("leftShoulderAngle").oninput = function () {
+    g_leftShoulderAngle = parseFloat(this.value);
+    renderAllShapes();
+  }
+
+  // Add event listener for rightShoulderAngle selection
+  document.getElementById("rightShoulderAngle").oninput = function () {
+    g_rightShoulderAngle = parseFloat(this.value);
+    renderAllShapes();
+  }
+
+  // Add event listener for rightArmAngle selection
+  document.getElementById("rightArmAngle").oninput = function () {
+    g_rightArmAngle = parseFloat(this.value);
+    renderAllShapes();
+  }
 }
 
 function main() {
@@ -163,165 +199,202 @@ export function renderAllShapes() {
   var body = new Cube();
   body.color = grayColor;
   body.matrix.translate(-0.2, -0.3, 0.0);
+  var bodyMatrix = new Matrix4(body.matrix);
   body.matrix.scale(0.5, 0.5, 0.3);
   body.render();
   var belly = new Cube();
   belly.color = whiteColor;
-  belly.matrix = new Matrix4(body.matrix);
+  belly.matrix = new Matrix4(bodyMatrix);
   belly.matrix.translate(0.1, 0.001, -0.001);
-  belly.matrix.scale(0.8, 1, 0.8);
+  belly.matrix.scale(0.3, 0.5, 0.3);
   belly.render();
 
   var head = new Cube();
   head.color = grayColor;
-  head.matrix = new Matrix4(body.matrix);
-  head.matrix.translate(0.15, 1, 0.05);
-  head.matrix.scale(0.7, 0.5, 0.8);
+  head.matrix = new Matrix4(bodyMatrix);
+  head.matrix.translate(0.1, 0.5, 0.05);
+  var headMatrix = new Matrix4(head.matrix);
+  head.matrix.scale(0.3, 0.3, 0.2);
   head.render();
 
   var nose = new Cube();
   nose.color = blackColor;
-  nose.matrix = new Matrix4(head.matrix);
-  nose.matrix.translate(0.4, 0.1, -0.1);
-  nose.matrix.scale(0.2, 0.5, 0.9)
+  nose.matrix = new Matrix4(headMatrix);
+  nose.matrix.translate(0.13, 0.07, -0.01);
+  var noseMatrix = new Matrix4(nose.matrix);
+  nose.matrix.scale(0.05, 0.12, 0.02)
   nose.render();
   var bottomNose = new Cube();
   bottomNose.color = whiteColor;
-  bottomNose.matrix = new Matrix4(nose.matrix);
-  bottomNose.matrix.translate(0.001, -0.15, 0.001);
-  bottomNose.matrix.scale(0.99, 0.5, 1);
+  bottomNose.matrix = new Matrix4(noseMatrix);
+  bottomNose.matrix.translate(0.001, -0.03, 0.001);
+  bottomNose.matrix.scale(0.045, 0.05, 0.02);
   bottomNose.render();
 
   var rightEye = new Cube();
   rightEye.color = blackColor;
-  rightEye.matrix = new Matrix4(head.matrix);
-  rightEye.matrix.translate(0.7, 0.5, -0.001);
-  rightEye.matrix.scale(0.1, 0.15, 0.001);
+  rightEye.matrix = new Matrix4(headMatrix);
+  rightEye.matrix.translate(0.21, 0.15, -0.001);
+  rightEye.matrix.scale(0.05, 0.04, 0.001);
   rightEye.render();
 
   var leftEye = new Cube();
   leftEye.color = blackColor;
-  leftEye.matrix = new Matrix4(head.matrix);
-  leftEye.matrix.translate(0.2, 0.5, -0.001);
-  leftEye.matrix.scale(0.1, 0.15, 0.001);
+  leftEye.matrix = new Matrix4(headMatrix);
+  leftEye.matrix.translate(0.05, 0.15, -0.001);
+  leftEye.matrix.scale(0.05, 0.04, 0.001);
   leftEye.render();
 
   var rightEar = new Cube();
   rightEar.color = grayColor;
-  rightEar.matrix = new Matrix4(head.matrix);
-  rightEar.matrix.translate(0.6, 0.7, 0.2);
+  rightEar.matrix = new Matrix4(headMatrix);
+  rightEar.matrix.translate(0.21, 0.23, 0.05);
   rightEar.matrix.rotate(-10, 0, 0, 1);
-  rightEar.matrix.scale(0.6, 0.7, 0.5);
+  var rightEarMatrix = new Matrix4(rightEar.matrix);
+  rightEar.matrix.scale(0.15, 0.19, 0.1);
   rightEar.render();
   var innerRightEar = new Cube();
   innerRightEar.color = whiteColor;
-  innerRightEar.matrix = new Matrix4(rightEar.matrix);
-  innerRightEar.matrix.translate(0.1, 0.1, -0.1);
-  innerRightEar.matrix.scale(0.7, 0.7, 0.9);
+  innerRightEar.matrix = new Matrix4(rightEarMatrix);
+  innerRightEar.matrix.translate(0.04, 0.04, -0.01);
+  innerRightEar.matrix.scale(0.09, 0.12, 0.08);
   innerRightEar.render();
 
   var leftEar = new Cube();
   leftEar.color = grayColor;
-  leftEar.matrix = new Matrix4(head.matrix);
-  leftEar.matrix.translate(-0.2, 0.6, 0.2);
+  leftEar.matrix = new Matrix4(headMatrix);
+  leftEar.matrix.translate(-0.07, 0.21, 0.05);
   leftEar.matrix.rotate(10, 0, 0, 1);
-  leftEar.matrix.scale(0.6, 0.7, 0.5);
+  var leftEarMatrix = new Matrix4(leftEar.matrix);
+  leftEar.matrix.scale(0.15, 0.19, 0.1);
   leftEar.render();
   var innerLeftEar = new Cube();
   innerLeftEar.color = whiteColor;
-  innerLeftEar.matrix = new Matrix4(leftEar.matrix);
-  innerLeftEar.matrix.translate(0.2, 0.1, -0.1);
-  innerLeftEar.matrix.scale(0.7, 0.7, 0.9);
+  innerLeftEar.matrix = new Matrix4(leftEarMatrix);
+  innerLeftEar.matrix.translate(0.02, 0.04, -0.01);
+  innerLeftEar.matrix.scale(0.09, 0.12, 0.08);
   innerLeftEar.render();
 
+  var rightShoulderMatrix = new Matrix4(bodyMatrix);
+  rightShoulderMatrix.translate(0.45, 0.35, 0.1);
+  rightShoulderMatrix.rotate(g_rightShoulderAngle, 0, 1, 0);
   var rightShoulder = new Cube();
-  rightShoulder.color = grayColor;
-  rightShoulder.matrix = new Matrix4(body.matrix);
-  rightShoulder.matrix.translate(0.9, 0.55, 0.1);
-  rightShoulder.matrix.scale(0.3, 0.4, 0.7);
+  rightShoulder.color = [1,1,0,1];
+  rightShoulder.matrix = new Matrix4(rightShoulderMatrix);
+  rightShoulder.matrix.translate(0, -0.08, -0.05);
+  rightShoulder.matrix.scale(0.21, 0.2, 0.2);
   rightShoulder.render();
+  var rightArmMatrix = new Matrix4(rightShoulderMatrix);
+  rightArmMatrix.translate(0.18, 0.01, 0.04);
+  rightArmMatrix.rotate(g_rightArmAngle, 0, -1, 0);
   var rightArm = new Cube();
   rightArm.color = grayColor;
-  rightArm.matrix = new Matrix4(rightShoulder.matrix);
-  rightArm.matrix.translate(0.6, 0.1, 0.45);
-  rightArm.matrix.rotate(45, 0, 1, 0);
-  rightArm.matrix.scale(1.5, 0.8, 0.6);
+  rightArm.matrix = new Matrix4(rightArmMatrix);
+  rightArm.matrix.translate(-0.06, -0.06, -0.04);
+  rightArm.matrix.scale(0.3, 0.15, 0.08);
   rightArm.render();
+  var rightHandMatrix = new Matrix4(rightArmMatrix);
+  rightHandMatrix.translate(-0.18, 0.01, -0.01);
+  rightHandMatrix.rotate(g_rightHandAngle, 0, 0, -1);
   var rightHand = new Cube();
   rightHand.color = grayColor;
-  rightHand.matrix = new Matrix4(rightArm.matrix);
-  rightHand.matrix.translate(1, 0.1, 0.2);
-  rightHand.matrix.scale(0.5, 0.7, 0.5);
+  rightHand.matrix = new Matrix4(rightHandMatrix);
+  rightHand.matrix.translate(-0.12, -0.03, -0.02);
+  rightHand.matrix.scale(0.145, 0.1, 0.045);
   rightHand.render();
+  var rightHandFinger1Matrix = new Matrix4(rightHandMatrix);
+  rightHandFinger1Matrix.translate(-0.02, 0.05, -0.01);
   var rightHandFinger1 = new Cube();
   rightHandFinger1.color = blackColor;
-  rightHandFinger1.matrix = new Matrix4(rightHand.matrix);
-  rightHandFinger1.matrix.translate(1, 0.7, 0.2);
-  rightHandFinger1.matrix.rotate(45, 0, 1, 1);
-  rightHandFinger1.matrix.scale(0.4, 0.2, 0.2);
+  rightHandFinger1.matrix = new Matrix4(rightHandFinger1Matrix);
+  rightHandFinger1.matrix.translate(-0.13, 0.015, 0);
+  rightHandFinger1.matrix.rotate(45, 0, 0, -1)
+  rightHandFinger1.matrix.scale(0.04, 0.02, 0.015);
   rightHandFinger1.render();
+  var rightHandFinger2Matrix = new Matrix4(rightHandMatrix);
+  rightHandFinger2Matrix.translate(-0.02, 0.05, -0.01);
   var rightHandFinger2 = new Cube();
   rightHandFinger2.color = blackColor;
-  rightHandFinger2.matrix = new Matrix4(rightHand.matrix);
-  rightHandFinger2.matrix.translate(1, 0.5, 0.1);
-  rightHandFinger2.matrix.scale(0.4, 0.2, 0.2);
+  rightHandFinger2.matrix = new Matrix4(rightHandFinger2Matrix);
+  rightHandFinger2.matrix.translate(-0.13, -0.03, 0);
+  rightHandFinger2.matrix.scale(0.04, 0.02, 0.015);
   rightHandFinger2.render();
+  var rightHandFinger3Matrix = new Matrix4(rightHandMatrix);
+  rightHandFinger3Matrix.translate(-0.02, 0.05, -0.01);
   var rightHandFinger3 = new Cube();
   rightHandFinger3.color = blackColor;
-  rightHandFinger3.matrix = new Matrix4(rightHand.matrix);
-  rightHandFinger3.matrix.translate(1, 0.25, 0.1);
-  rightHandFinger3.matrix.scale(0.4, 0.2, 0.2);
+  rightHandFinger3.matrix = new Matrix4(rightHandFinger3Matrix);
+  rightHandFinger3.matrix.translate(-0.13, -0.055, 0);
+  rightHandFinger3.matrix.scale(0.04, 0.02, 0.015);
   rightHandFinger3.render();
+  var rightHandFinger4Matrix = new Matrix4(rightHandMatrix);
+  rightHandFinger4Matrix.translate(-0.02, 0.05, -0.01);
   var rightHandFinger4 = new Cube();
   rightHandFinger4.color = blackColor;
-  rightHandFinger4.matrix = new Matrix4(rightHand.matrix);
-  rightHandFinger4.matrix.translate(1, 0, 0.1);
-  rightHandFinger4.matrix.scale(0.4, 0.2, 0.2);
+  rightHandFinger4.matrix = new Matrix4(rightHandFinger4Matrix);
+  rightHandFinger4.matrix.translate(-0.13, -0.08, 0);
+  rightHandFinger4.matrix.scale(0.04, 0.02, 0.015);
   rightHandFinger4.render();
 
+  var leftShoulderMatrix = new Matrix4(bodyMatrix);
+  leftShoulderMatrix.translate(0, 0.4, 0.1);
+  leftShoulderMatrix.rotate(g_leftShoulderAngle, 0, 1, 0);
   var leftShoulder = new Cube();
   leftShoulder.color = grayColor;
-  leftShoulder.matrix = new Matrix4(body.matrix);
-  leftShoulder.matrix.translate(-0.2, 0.55, 0.1);
-  leftShoulder.matrix.scale(0.3, 0.4, 0.7);
+  leftShoulder.matrix = new Matrix4(leftShoulderMatrix);
+  leftShoulder.matrix.translate(-0.12, -0.13, -0.05);
+  leftShoulder.matrix.scale(0.21, 0.2, 0.2);
   leftShoulder.render();
+  var leftArmMatrix = new Matrix4(leftShoulderMatrix);
+  leftArmMatrix.translate(-0.12, -0.06, 0.04);
+  leftArmMatrix.rotate(g_leftArmAngle, 0, -1, 0);
   var leftArm = new Cube();
   leftArm.color = grayColor;
-  leftArm.matrix = new Matrix4(leftShoulder.matrix);
-  leftArm.matrix.translate(-0.65, 0.1, -0.6);
-  leftArm.matrix.rotate(45, 0, -1, 0);
-  leftArm.matrix.scale(1.5, 0.8, 0.6);
+  leftArm.matrix = new Matrix4(leftArmMatrix);
+  leftArm.matrix.translate(-0.2, -0.045, -0.05);
+  leftArm.matrix.scale(0.3, 0.15, 0.1);
   leftArm.render();
+  var leftHandMatrix = new Matrix4(leftArmMatrix);
+  leftHandMatrix.translate(-0.18, 0.01, -0.01);
+  leftHandMatrix.rotate(g_leftHandAngle, 0, 0, -1);
   var leftHand = new Cube();
   leftHand.color = grayColor;
-  leftHand.matrix = new Matrix4(leftArm.matrix);
-  leftHand.matrix.translate(-0.5, 0.1, 0.2);
-  leftHand.matrix.scale(0.5, 0.7, 0.5);
+  leftHand.matrix = new Matrix4(leftHandMatrix);
+  leftHand.matrix.translate(-0.12, -0.03, -0.02);
+  leftHand.matrix.scale(0.145, 0.1, 0.045);
   leftHand.render();
+  var leftHandFinger1Matrix = new Matrix4(leftHandMatrix);
+  leftHandFinger1Matrix.translate(-0.02, 0.05, -0.01);
   var leftHandFinger1 = new Cube();
   leftHandFinger1.color = blackColor;
-  leftHandFinger1.matrix = new Matrix4(leftHand.matrix);
-  leftHandFinger1.matrix.translate(-0.3, 0.9, 0.1);
-  leftHandFinger1.matrix.rotate(45, 0, -1, -1);
-  leftHandFinger1.matrix.scale(0.4, 0.2, 0.2);
+  leftHandFinger1.matrix = new Matrix4(leftHandFinger1Matrix);
+  leftHandFinger1.matrix.translate(-0.13, 0.015, 0);
+  leftHandFinger1.matrix.rotate(45, 0, 0, -1)
+  leftHandFinger1.matrix.scale(0.04, 0.02, 0.015);
   leftHandFinger1.render();
+  var leftHandFinger2Matrix = new Matrix4(leftHandMatrix);
+  leftHandFinger2Matrix.translate(-0.02, 0.05, -0.01);
   var leftHandFinger2 = new Cube();
   leftHandFinger2.color = blackColor;
-  leftHandFinger2.matrix = new Matrix4(leftHand.matrix);
-  leftHandFinger2.matrix.translate(-0.4, 0.5, 0.5);
-  leftHandFinger2.matrix.scale(0.4, 0.2, 0.2);
+  leftHandFinger2.matrix = new Matrix4(leftHandFinger2Matrix);
+  leftHandFinger2.matrix.translate(-0.13, -0.03, 0);
+  leftHandFinger2.matrix.scale(0.04, 0.02, 0.015);
   leftHandFinger2.render();
+  var leftHandFinger3Matrix = new Matrix4(leftHandMatrix);
+  leftHandFinger3Matrix.translate(-0.02, 0.05, -0.01);
   var leftHandFinger3 = new Cube();
   leftHandFinger3.color = blackColor;
-  leftHandFinger3.matrix = new Matrix4(leftHand.matrix);
-  leftHandFinger3.matrix.translate(-0.4, 0.25, 0.5);
-  leftHandFinger3.matrix.scale(0.4, 0.2, 0.2);
+  leftHandFinger3.matrix = new Matrix4(leftHandFinger3Matrix);
+  leftHandFinger3.matrix.translate(-0.13, -0.055, 0);
+  leftHandFinger3.matrix.scale(0.04, 0.02, 0.015);
   leftHandFinger3.render();
+  var leftHandFinger4Matrix = new Matrix4(leftHandMatrix);
+  leftHandFinger4Matrix.translate(-0.02, 0.05, -0.01);
   var leftHandFinger4 = new Cube();
   leftHandFinger4.color = blackColor;
-  leftHandFinger4.matrix = new Matrix4(leftHand.matrix);
-  leftHandFinger4.matrix.translate(-0.4, 0, 0.5);
-  leftHandFinger4.matrix.scale(0.4, 0.2, 0.2);
+  leftHandFinger4.matrix = new Matrix4(leftHandFinger4Matrix);
+  leftHandFinger4.matrix.translate(-0.13, -0.08, 0);
+  leftHandFinger4.matrix.scale(0.04, 0.02, 0.015);
   leftHandFinger4.render();
 
   var leftThigh = new Cube();
