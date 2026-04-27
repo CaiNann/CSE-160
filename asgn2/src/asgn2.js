@@ -23,8 +23,9 @@ var FSHADER_SOURCE =
   "  gl_FragColor = u_FragColor;\n" +
   "}\n";
 
+window.g_animating = true;
 window.g_selectedXAngle = 0;
-window.g_selectedYAngle = -90;
+window.g_selectedYAngle = 0;
 window.g_selectedZAngle = 0;
 window.g_leftArmAngle = 0;
 window.g_leftHandAngle = 0;
@@ -158,6 +159,30 @@ function addActionsForHtmlUI() {
     g_rightArmAngle = parseFloat(this.value);
     renderAllShapes();
   }
+
+  // Add event listener for rightHandAngle selection
+  document.getElementById("rightHandAngle").oninput = function () {
+    g_rightHandAngle = parseFloat(this.value);
+    renderAllShapes();
+  }
+}
+
+// FPS tracking variables
+let g_fpsLastTime = performance.now();
+let g_fpsFrameCount = 0;
+let g_fps = 0;
+
+function updateFPS() {
+  g_fpsFrameCount++;
+  const now = performance.now();
+  const elapsed = now - g_fpsLastTime;
+
+  if (elapsed >= 500) {
+    g_fps = (g_fpsFrameCount / elapsed) * 1000;
+    document.getElementById("fps").textContent = `FPS: ${g_fps.toFixed(1)}`;
+    g_fpsFrameCount = 0;
+    g_fpsLastTime = now;
+  }
 }
 
 function main() {
@@ -167,17 +192,69 @@ function main() {
   connectVariablesToGLSL();
 
   addActionsForHtmlUI();
+
+  addMouseControl();
   
   // Specify the color for clearing <canvas>
   gl.clearColor(0.0, 1.0, 0.0, 1.0);
 
-  renderAllShapes();
+  requestAnimationFrame(tick);
+}
+
+function addMouseControl() {
+  let isDragging = false;
+  let lastX = 0;
+  let lastY = 0;
+
+  canvas.addEventListener('mousedown', function(e) {
+    isDragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+  });
+
+  canvas.addEventListener('mousemove', function(e) {
+    if (!isDragging) return;
+
+    let deltaX = e.clientX - lastX;
+    let deltaY = e.clientY - lastY;
+
+    g_selectedXAngle += deltaX * 0.5;
+    g_selectedYAngle += deltaY * 0.5;
+
+    lastX = e.clientX;
+    lastY = e.clientY;
+
+    renderAllShapes();
+  });
+
+  canvas.addEventListener('mouseup', function() {
+    isDragging = false;
+  });
+
+  // Stop dragging if mouse leaves the canvas
+  canvas.addEventListener('mouseleave', function() {
+    isDragging = false;
+  });
 }
 
 var g_startTime = performance.now() / 1000.0;
 var g_seconds = performance.now() / 1000.0 - g_startTime;
 
+function tick() {
+  g_seconds = performance.now() / 1000.0 - g_startTime;
+  renderAllShapes();
+  if (g_animating) requestAnimationFrame(tick);
+}
+
+window.toggleAnimation = function() {
+  g_animating = !g_animating;
+  document.getElementById("animToggle").textContent = g_animating ? "Stop" : "Start";
+  if (g_animating) tick();
+}
+
 export function renderAllShapes() {
+  updateFPS();
+
   // Apply camera rotation
   var cameraXMatrix = new Matrix4();
   cameraXMatrix.rotate(g_selectedXAngle, 0, 1, 0);
@@ -277,9 +354,13 @@ export function renderAllShapes() {
 
   var rightShoulderMatrix = new Matrix4(bodyMatrix);
   rightShoulderMatrix.translate(0.45, 0.35, 0.1);
-  rightShoulderMatrix.rotate(g_rightShoulderAngle, 0, 1, 0);
+  if (g_animating) {
+    rightShoulderMatrix.rotate(-5 + 25* Math.sin(g_seconds), 0, 1, 0);
+  } else {
+    rightShoulderMatrix.rotate(g_rightShoulderAngle, 0, 1, 0);
+  }
   var rightShoulder = new Cube();
-  rightShoulder.color = [1,1,0,1];
+  rightShoulder.color = grayColor;
   rightShoulder.matrix = new Matrix4(rightShoulderMatrix);
   rightShoulder.matrix.translate(0, -0.08, -0.05);
   rightShoulder.matrix.scale(0.21, 0.2, 0.2);
@@ -294,45 +375,49 @@ export function renderAllShapes() {
   rightArm.matrix.scale(0.3, 0.15, 0.08);
   rightArm.render();
   var rightHandMatrix = new Matrix4(rightArmMatrix);
-  rightHandMatrix.translate(-0.18, 0.01, -0.01);
-  rightHandMatrix.rotate(g_rightHandAngle, 0, 0, -1);
+  rightHandMatrix.translate(0.22, 0.01, -0.01);
+  if (g_animating) {
+    rightHandMatrix.rotate(20 * Math.sin(g_seconds), 0, 0, -1);
+  } else {
+    rightHandMatrix.rotate(g_rightHandAngle, 0, 0, -1);
+  }
   var rightHand = new Cube();
   rightHand.color = grayColor;
   rightHand.matrix = new Matrix4(rightHandMatrix);
-  rightHand.matrix.translate(-0.12, -0.03, -0.02);
+  rightHand.matrix.translate(0, -0.045, -0.02);
   rightHand.matrix.scale(0.145, 0.1, 0.045);
   rightHand.render();
   var rightHandFinger1Matrix = new Matrix4(rightHandMatrix);
-  rightHandFinger1Matrix.translate(-0.02, 0.05, -0.01);
+  rightHandFinger1Matrix.translate(0.14, 0.035, -0.01);
   var rightHandFinger1 = new Cube();
   rightHandFinger1.color = blackColor;
   rightHandFinger1.matrix = new Matrix4(rightHandFinger1Matrix);
-  rightHandFinger1.matrix.translate(-0.13, 0.015, 0);
-  rightHandFinger1.matrix.rotate(45, 0, 0, -1)
+  rightHandFinger1.matrix.translate(0, -0.005, 0);
+  rightHandFinger1.matrix.rotate(45, 0, 0, 1)
   rightHandFinger1.matrix.scale(0.04, 0.02, 0.015);
   rightHandFinger1.render();
   var rightHandFinger2Matrix = new Matrix4(rightHandMatrix);
-  rightHandFinger2Matrix.translate(-0.02, 0.05, -0.01);
+  rightHandFinger2Matrix.translate(0.14, 0.002, -0.01);
   var rightHandFinger2 = new Cube();
   rightHandFinger2.color = blackColor;
   rightHandFinger2.matrix = new Matrix4(rightHandFinger2Matrix);
-  rightHandFinger2.matrix.translate(-0.13, -0.03, 0);
+  rightHandFinger2.matrix.translate(0, 0.01, 0);
   rightHandFinger2.matrix.scale(0.04, 0.02, 0.015);
   rightHandFinger2.render();
   var rightHandFinger3Matrix = new Matrix4(rightHandMatrix);
-  rightHandFinger3Matrix.translate(-0.02, 0.05, -0.01);
+  rightHandFinger3Matrix.translate(0.14, 0.035, -0.01);
   var rightHandFinger3 = new Cube();
   rightHandFinger3.color = blackColor;
   rightHandFinger3.matrix = new Matrix4(rightHandFinger3Matrix);
-  rightHandFinger3.matrix.translate(-0.13, -0.055, 0);
+  rightHandFinger3.matrix.translate(0, -0.05, 0);
   rightHandFinger3.matrix.scale(0.04, 0.02, 0.015);
   rightHandFinger3.render();
   var rightHandFinger4Matrix = new Matrix4(rightHandMatrix);
-  rightHandFinger4Matrix.translate(-0.02, 0.05, -0.01);
+  rightHandFinger4Matrix.translate(0.14, 0.002, -0.01);
   var rightHandFinger4 = new Cube();
   rightHandFinger4.color = blackColor;
   rightHandFinger4.matrix = new Matrix4(rightHandFinger4Matrix);
-  rightHandFinger4.matrix.translate(-0.13, -0.08, 0);
+  rightHandFinger4.matrix.translate(0, -0.045, 0);
   rightHandFinger4.matrix.scale(0.04, 0.02, 0.015);
   rightHandFinger4.render();
 

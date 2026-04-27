@@ -9,6 +9,18 @@
     <div id="canvas-container" style="position: relative; display: inline-block;">
         <canvas id="webgl" width="400" height="400" style="border: 1px solid black;"></canvas>
     </div>
+
+    <div id="fps" style="
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.6);
+    color: #00ff88;
+    font-family: monospace;
+    font-size: 16px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    ">FPS: --</div>
     
     <div>
         Camera Angle X<input type="range" min="-360" max="360" value="0" class="slider" id="XangleSlider"
@@ -28,8 +40,9 @@
     <div>
         Right Arm <input type="range" min="-20" max="40" value="0" class="slider" id="rightArmAngle">
         Right Hand <input type="range" min="-20" max="20" value="0" class="slider" id="rightHandAngle">
-        Right Shoulder <input type="range" min="-90" max="90" value="0" class="slider" id="rightShoulderAngle">
+        Right Shoulder <input type="range" min="-30" max="20" value="0" class="slider" id="rightShoulderAngle">
     </div>
+    <button id="animToggle" onclick="toggleAnimation()">Stop/Start Animation</button>
     
  
     <script src="../lib/webgl-utils.js"></script>
