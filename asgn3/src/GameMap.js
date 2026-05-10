@@ -47,7 +47,7 @@ export class GameMap {
         // update HUD if something was collected
         if (this.eucalyptus.length !== before && this.eucalyptus.length > 4) {
             let collected = 5 - (this.eucalyptus.length - 5);
-            document.getElementById('hud').innerText = `Eucalyptus: ${collected} / 5`;
+            document.getElementById('hud').innerText = `Eucalyptus: ${collected} / 5 (F to pick up)`;
     
             if (this.eucalyptus.length === 5) {
                 document.getElementById('hud').innerText = `All collected! Return to the koala!`;
