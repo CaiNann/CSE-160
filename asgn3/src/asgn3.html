@@ -22,26 +22,19 @@
     border-radius: 4px;
     ">FPS: --</div>
     
-    <div>
-        Camera Angle X<input type="range" min="-360" max="360" value="0" class="slider" id="XangleSlider"
-    </div>
-    <div>
-        Camera Angle Y<input type="range" min="-360" max="360" value="0" class="slider" id="YangleSlider"
-    </div>
-    <div>
-        Camera Angle Z<input type="range" min="-360" max="360" value="0" class="slider" id="ZangleSlider"
+    <div id="hud" style="
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: white;
+    font-size: 24px;
+    font-family: monospace;
+    text-shadow: 2px 2px 0px black;
+    pointer-events: none;
+">
+    Eucalyptus: 0 / 5
     </div>
 
-    <div>
-        Left Arm <input type="range" min="-20" max="40" value="0" class="slider" id="leftArmAngle">
-        Left Hand <input type="range" min="-20" max="20" value="0" class="slider" id="leftHandAngle">
-        Left Shoulder <input type="range" min="-30" max="30" value="0" class="slider" id="leftShoulderAngle">
-    </div>
-    <div>
-        Right Arm <input type="range" min="-20" max="40" value="0" class="slider" id="rightArmAngle">
-        Right Hand <input type="range" min="-20" max="20" value="0" class="slider" id="rightHandAngle">
-        Right Shoulder <input type="range" min="-30" max="20" value="0" class="slider" id="rightShoulderAngle">
-    </div>
     <button id="animToggle" onclick="toggleAnimation()">Stop/Start Animation</button>
     
  
